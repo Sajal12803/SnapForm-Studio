@@ -11,8 +11,8 @@ export const CartDrawer = () => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + (parseFloat(item.price.amount) * item.quantity), 0);
 
-  useEffect(() => { 
-    if (isOpen) syncCart(); 
+  useEffect(() => {
+    if (isOpen) syncCart();
   }, [isOpen, syncCart]);
 
   const handleCheckout = () => {
@@ -58,10 +58,10 @@ export const CartDrawer = () => {
                     <div key={item.variantId} className="flex gap-4 p-3 bg-secondary/30 rounded-lg">
                       <div className="w-16 h-16 bg-secondary rounded-md overflow-hidden flex-shrink-0">
                         {item.product.node.images?.edges?.[0]?.node && (
-                          <img 
-                            src={item.product.node.images.edges[0].node.url} 
-                            alt={item.product.node.title} 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={item.product.node.images.edges[0].node.url}
+                            alt={item.product.node.title}
+                            className="w-full h-full object-cover"
                           />
                         )}
                       </div>
@@ -69,7 +69,7 @@ export const CartDrawer = () => {
                         <h4 className="font-medium truncate text-sm">{item.product.node.title}</h4>
                         <p className="text-xs text-muted-foreground">{item.selectedOptions.map(option => option.value).join(' • ')}</p>
                         <p className="font-semibold text-primary mt-1">
-                          {item.price.currencyCode} {parseFloat(item.price.amount).toFixed(2)}
+                          $ {parseFloat(item.price.amount).toFixed(2)}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
@@ -94,13 +94,13 @@ export const CartDrawer = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total</span>
                   <span className="text-xl font-bold gradient-text">
-                    {items[0]?.price.currencyCode || 'INR'} {totalPrice.toFixed(2)}
+                    $ {totalPrice.toFixed(2)}
                   </span>
                 </div>
-                <Button 
-                  onClick={handleCheckout} 
-                  className="w-full neon-glow" 
-                  size="lg" 
+                <Button
+                  onClick={handleCheckout}
+                  className="w-full neon-glow"
+                  size="lg"
                   disabled={items.length === 0 || isLoading || isSyncing}
                 >
                   {isLoading || isSyncing ? (

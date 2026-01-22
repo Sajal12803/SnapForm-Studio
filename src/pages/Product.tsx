@@ -30,7 +30,8 @@ const Product = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState("");
   const [notes, setNotes] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [product, setProduct] = useState<ShopifyProduct | null>(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
 
@@ -173,12 +174,12 @@ const Product = () => {
 
               {/* Thumbnails */}
               {productImages.length > 1 && (
-                <div className="flex gap-3">
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
                   {productImages.map((img, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
+                      className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
                         ? "border-primary"
                         : "border-border hover:border-muted-foreground"
                         }`}
@@ -210,7 +211,7 @@ const Product = () => {
 
               <div className="flex items-baseline gap-4 mb-8">
                 <span className="text-4xl font-heading font-bold gradient-text">
-                  {variantData?.price.currencyCode} {parseFloat(variantData?.price.amount || "0").toFixed(2)}
+                  $ {parseFloat(variantData?.price.amount || "0").toFixed(2)}
                 </span>
               </div>
 
@@ -228,7 +229,7 @@ const Product = () => {
                     <SelectContent className="bg-card border-border">
                       {product.node.variants.edges.map((variant) => (
                         <SelectItem key={variant.node.id} value={variant.node.id}>
-                          {variant.node.title} - {variant.node.price.currencyCode} {parseFloat(variant.node.price.amount).toFixed(2)}
+                          {variant.node.title} - ${parseFloat(variant.node.price.amount).toFixed(2)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -257,42 +258,64 @@ const Product = () => {
                   <Label htmlFor="file-upload" className="text-base mb-2 block">
                     Upload Your Selfie (Optional)
                   </Label>
-                  <div className="flex items-center gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full relative overflow-hidden"
-                      onClick={() => document.getElementById('file-upload')?.click()}
+                  <div className="w-full space-y-4">
+                    {/* Upload Area */}
+                    <div
+                      className="relative w-full h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden group bg-secondary/20"
                     >
-                      {selectedFile ? (
-                        <span className="truncate">{selectedFile.name}</span>
-                      ) : (
-                        <>
-                          <Upload className="mr-2 w-4 h-4" />
-                          Choose Image
-                        </>
-                      )}
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                          <Upload className="w-5 h-5" />
+                        </div>
+                        <div className="text-center">
+                          <p className="font-medium text-foreground">Click to upload photos</p>
+                          <p className="text-xs">Select multiple images</p>
+                        </div>
+                      </div>
                       <input
                         id="file-upload"
                         type="file"
                         accept="image/*"
+                        multiple
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            setSelectedFile(e.target.files[0]);
+                          if (e.target.files && e.target.files.length > 0) {
+                            const newFiles = Array.from(e.target.files);
+                            setSelectedFiles(prev => [...prev, ...newFiles]);
+                            const newUrls = newFiles.map(file => URL.createObjectURL(file));
+                            setPreviewUrls(prev => [...prev, ...newUrls]);
                           }
                         }}
                       />
-                    </Button>
-                    {selectedFile && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setSelectedFile(null)}
-                      >
-                        <X className="w-4 h-4 text-muted-foreground" />
-                      </Button>
+                    </div>
+
+                    {/* Previews Grid */}
+                    {previewUrls.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {previewUrls.map((url, index) => (
+                          <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-border bg-secondary/10">
+                            <img
+                              src={url}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-full object-contain"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="h-8 w-8 rounded-full"
+                                onClick={() => {
+                                  setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                                  setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+                                }}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
