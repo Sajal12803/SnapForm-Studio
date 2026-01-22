@@ -260,7 +260,8 @@ const Product = () => {
                   </Label>
                   <div className="w-full space-y-4">
                     {/* Upload Area */}
-                    <div
+                    <label
+                      htmlFor="file-upload"
                       className="relative w-full h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden group bg-secondary/20"
                     >
                       <div className="flex flex-col items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
@@ -287,7 +288,7 @@ const Product = () => {
                           }
                         }}
                       />
-                    </div>
+                    </label>
 
                     {/* Previews Grid */}
                     {previewUrls.length > 0 && (
@@ -318,9 +319,7 @@ const Product = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Or you can upload via email after checkout.
-                  </p>
+
                 </div>
               </div>
 
