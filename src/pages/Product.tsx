@@ -146,8 +146,8 @@ const Product = () => {
   }
 
   const productImages = product
-    ? [...product.node.images.edges.map(e => e.node.url), animeCasePurple, animeCaseBlue, animeCasePink]
-    : [animeCasePurple, animeCaseBlue, animeCasePink];
+    ? [...previewUrls, ...product.node.images.edges.map(e => e.node.url), animeCasePurple, animeCaseBlue, animeCasePink]
+    : [...previewUrls, animeCasePurple, animeCaseBlue, animeCasePink];
 
   return (
     <Layout>
@@ -284,7 +284,13 @@ const Product = () => {
                             const newFiles = Array.from(e.target.files);
                             setSelectedFiles(prev => [...prev, ...newFiles]);
                             const newUrls = newFiles.map(file => URL.createObjectURL(file));
-                            setPreviewUrls(prev => [...prev, ...newUrls]);
+                            setPreviewUrls(prev => {
+                              const updated = [...prev, ...newUrls];
+                              return updated;
+                            });
+                            // Auto-select the first new image
+                            // Since previews are now at the start, index is just the current length
+                            setSelectedImage(previewUrls.length);
                           }
                         }}
                       />
