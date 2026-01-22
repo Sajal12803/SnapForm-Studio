@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { 
-  storefrontApiRequest, 
-  CART_QUERY, 
-  CART_CREATE_MUTATION, 
-  CART_LINES_ADD_MUTATION, 
-  CART_LINES_UPDATE_MUTATION, 
+import {
+  storefrontApiRequest,
+  CART_QUERY,
+  CART_CREATE_MUTATION,
+  CART_LINES_ADD_MUTATION,
+  CART_LINES_UPDATE_MUTATION,
   CART_LINES_REMOVE_MUTATION,
-  ShopifyProduct 
+  ShopifyProduct
 } from '@/lib/shopify';
 
 export interface CartItem {
@@ -18,6 +18,7 @@ export interface CartItem {
   price: { amount: string; currencyCode: string };
   quantity: number;
   selectedOptions: Array<{ name: string; value: string }>;
+  attributes?: Array<{ key: string; value: string }>;
 }
 
 interface CartStore {
@@ -45,15 +46,15 @@ function formatCheckoutUrl(checkoutUrl: string): string {
 }
 
 function isCartNotFoundError(userErrors: Array<{ field: string[] | null; message: string }>): boolean {
-  return userErrors.some(e => 
-    e.message.toLowerCase().includes('cart not found') || 
+  return userErrors.some(e =>
+    e.message.toLowerCase().includes('cart not found') ||
     e.message.toLowerCase().includes('does not exist')
   );
 }
 
 async function createShopifyCart(item: CartItem): Promise<{ cartId: string; checkoutUrl: string; lineId: string } | null> {
   const data = await storefrontApiRequest(CART_CREATE_MUTATION, {
-    input: { lines: [{ quantity: item.quantity, merchandiseId: item.variantId }] },
+    input: { lines: [{ quantity: item.quantity, merchandiseId: item.variantId, attributes: item.attributes || [] }] },
   });
 
   if (data?.data?.cartCreate?.userErrors?.length > 0) {
@@ -73,7 +74,7 @@ async function createShopifyCart(item: CartItem): Promise<{ cartId: string; chec
 async function addLineToShopifyCart(cartId: string, item: CartItem): Promise<{ success: boolean; lineId?: string; cartNotFound?: boolean }> {
   const data = await storefrontApiRequest(CART_LINES_ADD_MUTATION, {
     cartId,
-    lines: [{ quantity: item.quantity, merchandiseId: item.variantId }],
+    lines: [{ quantity: item.quantity, merchandiseId: item.variantId, attributes: item.attributes || [] }],
   });
 
   const userErrors = data?.data?.cartLinesAdd?.userErrors || [];
@@ -84,7 +85,7 @@ async function addLineToShopifyCart(cartId: string, item: CartItem): Promise<{ s
   }
 
   const lines = data?.data?.cartLinesAdd?.cart?.lines?.edges || [];
-  const newLine = lines.find((l: { node: { id: string; merchandise: { id: string } } }) => 
+  const newLine = lines.find((l: { node: { id: string; merchandise: { id: string } } }) =>
     l.node.merchandise.id === item.variantId
   );
   return { success: true, lineId: newLine?.node?.id };
@@ -132,7 +133,7 @@ export const useCartStore = create<CartStore>()(
       addItem: async (item) => {
         const { items, cartId, clearCart } = get();
         const existingItem = items.find(i => i.variantId === item.variantId);
-        
+
         set({ isLoading: true });
         try {
           if (!cartId) {
@@ -178,7 +179,7 @@ export const useCartStore = create<CartStore>()(
           await get().removeItem(variantId);
           return;
         }
-        
+
         const { items, cartId, clearCart } = get();
         const item = items.find(i => i.variantId === variantId);
         if (!item?.lineId || !cartId) return;

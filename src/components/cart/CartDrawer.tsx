@@ -57,17 +57,27 @@ export const CartDrawer = () => {
                   {items.map((item) => (
                     <div key={item.variantId} className="flex gap-4 p-3 bg-secondary/30 rounded-lg">
                       <div className="w-16 h-16 bg-secondary rounded-md overflow-hidden flex-shrink-0">
-                        {item.product.node.images?.edges?.[0]?.node && (
-                          <img
-                            src={item.product.node.images.edges[0].node.url}
-                            alt={item.product.node.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
+                        {(() => {
+                          const customImage = item.attributes?.find(a => a.key === "Custom Image")?.value;
+                          const displayImage = customImage || item.product.node.images?.edges?.[0]?.node?.url;
+
+                          return displayImage ? (
+                            <img
+                              src={displayImage}
+                              alt={item.product.node.title}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : null;
+                        })()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium truncate text-sm">{item.product.node.title}</h4>
                         <p className="text-xs text-muted-foreground">{item.selectedOptions.map(option => option.value).join(' • ')}</p>
+                        {item.attributes?.find(a => a.key === "Note")?.value && (
+                          <p className="text-xs text-primary mt-1 italic">
+                            Note: {item.attributes.find(a => a.key === "Note")?.value}
+                          </p>
+                        )}
                         <p className="font-semibold text-primary mt-1">
                           $ {parseFloat(item.price.amount).toFixed(2)}
                         </p>

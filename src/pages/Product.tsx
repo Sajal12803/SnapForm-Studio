@@ -68,6 +68,9 @@ const Product = () => {
   };
 
   const variantData = getSelectedVariantData();
+  const isUltra = variantData?.title.includes('Ultra');
+  const isPixel = variantData?.title.includes('Pixel');
+  const isSamsung = variantData?.title.includes('Samsung');
 
   const handleAddToCart = async () => {
     if (!product || !variantData) {
@@ -85,6 +88,10 @@ const Product = () => {
       price: variantData.price,
       quantity: 1,
       selectedOptions: variantData.selectedOptions || [],
+      attributes: [
+        { key: "Custom Image", value: previewUrls[0] || "" },
+        { key: "Note", value: notes }
+      ].filter(attr => attr.value)
     });
 
     toast({
@@ -109,6 +116,10 @@ const Product = () => {
       price: variantData.price,
       quantity: 1,
       selectedOptions: variantData.selectedOptions || [],
+      attributes: [
+        { key: "Custom Image", value: previewUrls[0] || "" },
+        { key: "Note", value: notes }
+      ].filter(attr => attr.value)
     });
 
     // Get checkout URL and redirect
@@ -164,11 +175,92 @@ const Product = () => {
               <div className="relative mb-4 bg-secondary/30 rounded-2xl p-4 lg:p-8">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(270_91%_65%_/_0.1)_0%,_transparent_70%)]" />
                 {productImages[selectedImage] && (
-                  <img
-                    src={productImages[selectedImage]}
-                    alt={product.node.title}
-                    className="relative w-full max-w-md mx-auto"
-                  />
+                  productImages[selectedImage].startsWith('blob:') ? (
+                    <div className={`relative w-full max-w-[260px] mx-auto aspect-[9/19.5] bg-[#1a0b2e] shadow-[0_0_25px_rgba(168,85,247,0.3)] border-[8px] border-zinc-900 overflow-hidden ring-1 ring-white/20 ${isUltra ? 'rounded-xl' : 'rounded-[2.5rem]'}`}>
+                      <img
+                        src={productImages[selectedImage]}
+                        alt="Custom Design"
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Gloss Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
+                      {/* Camera Bump Placeholder */}
+                      {isPixel ? (
+                        /* Google Pixel Layout: Horizontal Bar - High Fidelity */
+                        <div className="absolute top-8 left-0 right-0 h-10 bg-[#080808] border-y border-zinc-800 shadow-2xl flex items-center justify-between px-6 pointer-events-none z-10 overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 opacity-30" />
+                          <div className="flex items-center gap-4 relative z-10">
+                            <div className="h-7 px-3 rounded-full bg-[#050505] border border-zinc-800 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] flex items-center justify-center gap-3">
+                              <div className="w-4 h-4 rounded-full bg-[#000] ring-1 ring-zinc-700 shadow-[inset_0_0_4px_black]">
+                                <div className="w-full h-full bg-[radial-gradient(circle_at_30%_30%,_rgba(50,50,150,0.3),_transparent_70%)]" />
+                              </div>
+                              <div className="w-4 h-4 rounded-full bg-[#000] ring-1 ring-zinc-700 shadow-[inset_0_0_4px_black]">
+                                <div className="w-full h-full bg-[radial-gradient(circle_at_30%_30%,_rgba(50,50,150,0.3),_transparent_70%)]" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="w-2.5 h-2.5 rounded-full bg-zinc-800 border border-zinc-700 shadow-inner" />
+                        </div>
+                      ) : isSamsung ? (
+                        /* Samsung Layout: Vertical Lenses - High Fidelity */
+                        <div className="absolute top-4 left-4 flex gap-2 pointer-events-none select-none z-10">
+                          <div className="flex flex-col gap-3">
+                            {[0, 1, 2].map((i) => (
+                              <div key={i} className="w-9 h-9 rounded-full bg-[#050505] ring-1 ring-zinc-700 shadow-xl relative overflow-hidden">
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.15),_transparent_60%)]" />
+                                <div className="absolute inset-1.5 rounded-full bg-[#000] shadow-[inset_0_2px_4px_black] border border-[#1a1a1a]" />
+                                <div className="absolute top-[35%] left-[35%] w-1.5 h-1.5 rounded-full bg-blue-500/20 blur-[0.5px]" />
+                              </div>
+                            ))}
+                          </div>
+                          {isUltra && (
+                            <div className="flex flex-col gap-5 mt-5">
+                              <div className="w-7 h-7 rounded-full bg-[#050505] ring-1 ring-zinc-700 shadow-xl relative overflow-hidden">
+                                <div className="absolute inset-1.5 rounded-full bg-[#000] shadow-inner" />
+                                <div className="absolute top-[30%] left-[30%] w-1 h-1 rounded-full bg-white/10 blur-[0.5px]" />
+                              </div>
+                              <div className="w-4 h-4 rounded-full bg-[#111] ring-1 ring-zinc-600 ml-1.5 shadow-inner" /> {/* Flash/Sensor */}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        /* iPhone Pro Layout: CSS Camera Module */
+                        <div className="absolute top-4 left-4 w-[42%] aspect-square bg-[#1c1c1c] rounded-[1.8rem] pointer-events-none shadow-[0_4px_20px_rgba(0,0,0,0.5)] z-20 overflow-hidden">
+                          <div className="relative w-full h-full p-1.5">
+                            {/* Top Left Lens */}
+                            <div className="absolute top-1.5 left-1.5 w-[40%] aspect-square rounded-full bg-[#0a0a0a] ring-[3px] ring-[#2a2a2a] shadow-lg overflow-hidden">
+                              <div className="absolute inset-[15%] rounded-full bg-gradient-to-br from-[#1a1a2e] to-[#0d0d15]" />
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_35%,_rgba(255,255,255,0.15),_transparent_50%)]" />
+                            </div>
+
+                            {/* Top Right Lens */}
+                            <div className="absolute top-1.5 right-1.5 w-[40%] aspect-square rounded-full bg-[#0a0a0a] ring-[3px] ring-[#2a2a2a] shadow-lg overflow-hidden">
+                              <div className="absolute inset-[15%] rounded-full bg-gradient-to-br from-[#1a1a2e] to-[#0d0d15]" />
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_35%,_rgba(255,255,255,0.15),_transparent_50%)]" />
+                            </div>
+
+                            {/* Bottom Center Lens */}
+                            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-[40%] aspect-square rounded-full bg-[#0a0a0a] ring-[3px] ring-[#2a2a2a] shadow-lg overflow-hidden">
+                              <div className="absolute inset-[15%] rounded-full bg-gradient-to-br from-[#1a1a2e] to-[#0d0d15]" />
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_35%,_rgba(255,255,255,0.15),_transparent_50%)]" />
+                            </div>
+
+                            {/* Flash */}
+                            <div className="absolute top-2.5 right-[35%] w-3 h-3 rounded-full bg-[#e8d8a0]/80 shadow-[0_0_6px_rgba(255,220,150,0.4)]" />
+
+                            {/* LiDAR */}
+                            <div className="absolute bottom-3 right-2 w-2.5 h-2.5 rounded-full bg-[#151515] ring-1 ring-[#333]" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <img
+                      src={productImages[selectedImage]}
+                      alt={product.node.title}
+                      className="relative w-full max-w-md mx-auto"
+                    />
+                  )
                 )}
               </div>
 
